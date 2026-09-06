@@ -1,8 +1,16 @@
 package com.aldisued.iot.monitoring.controller;
 
+import com.aldisued.iot.monitoring.dto.AlertDto;
+import com.aldisued.iot.monitoring.entity.Alert;
 import com.aldisued.iot.monitoring.service.AlertService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.aldisued.iot.monitoring.service.SensorNotFoundException;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/alerts")
@@ -14,4 +22,20 @@ public class AlertController {
     this.alertService = alertService;
   }
 
+  @PostMapping
+  public Alert saveAlert(@Valid @RequestBody AlertDto alertDto) {
+    return alertService.saveAlert(alertDto);
+  }
+
+  @GetMapping("/latest")
+  public ResponseEntity<AlertDto> getLatestAlert(@RequestParam UUID sensorId) {
+    return ResponseEntity.of(alertService.findLastAlertBySensorId(sensorId));
+  }
+
+  @ExceptionHandler(SensorNotFoundException.class)
+  ProblemDetail handleSensorNotFoundExceptionException(SensorNotFoundException e) {
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    problemDetail.setTitle("Sensor not found: " + e.getSensorId());
+    return problemDetail;
+  }
 }

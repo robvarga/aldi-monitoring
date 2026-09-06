@@ -1,16 +1,17 @@
 package com.aldisued.iot.monitoring.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Table(name = "sensor_readings")
 @Entity
 public class SensorReading {
+
+  public static final String SENSOR_ID_CONSTRAINT_NAME = "sensor_readings_sensor_id";
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -22,17 +23,22 @@ public class SensorReading {
   @Column(nullable = false)
   private LocalDateTime timestamp;
 
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "sensor_id", nullable = false,
+          foreignKey = @ForeignKey(name = SENSOR_ID_CONSTRAINT_NAME))
+  private Sensor sensor;
+
   public SensorReading() {
   }
 
   public SensorReading(
-      Double value,
-      LocalDateTime timestamp,
-      Sensor sensor
+          Double value,
+          LocalDateTime timestamp,
+          Sensor sensor
   ) {
     this.value = value;
     this.timestamp = timestamp;
-    //TODO: Task 2
+    this.sensor = sensor;
   }
 
   public Long getId() {
@@ -59,12 +65,19 @@ public class SensorReading {
     this.timestamp = timestamp;
   }
 
+  // this is required to break the circular reference leading to infinite recursion at rendering to JSON
+  @JsonIgnore
   public Sensor getSensor() {
-    //TODO: Task 2
-    return null;
+    return sensor;
+  }
+
+  // this is required to show some information about the sensor now that it is not rendered to JSON
+  @JsonProperty("sensorId")
+  public UUID sensorId() {
+    return sensor == null ? null : sensor.getId();
   }
 
   public void setSensor(Sensor sensor) {
-    //TODO: Task 2
+    this.sensor = sensor;
   }
 }

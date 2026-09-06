@@ -9,3 +9,6 @@ INSERT INTO sensor_readings(id, value, timestamp, sensor_id) VALUES (4, 0.45, '2
 INSERT INTO sensor_readings(id, value, timestamp, sensor_id) VALUES (5, 0.48, '2020-06-23 18:56:43', 'ac723c77-955f-469d-9d6a-d56bac39c202');
 
 INSERT INTO alerts (id, message, timestamp, sensor_id) VALUES (1, 'Temperature alert',  '2020-06-24 18:23:12', 'e3242ea2-0514-46d3-aad8-b2012980c41c');
+
+SELECT setval('sensor_readings_seq', (SELECT MAX(id) FROM sensor_readings));
+SELECT setval('alerts_seq', (SELECT MAX(id) FROM alerts));
